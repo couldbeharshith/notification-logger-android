@@ -3,6 +3,7 @@ module.exports = {
     android: {
       sourceDir: './android',
       packageName: 'com.notificationlogger',
+      appName: 'NotificationLogger',
     },
   },
 };
