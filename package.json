@@ -43,5 +43,13 @@
   },
   "engines": {
     "node": ">=18"
+  },
+  "reactNativeConfig": {
+    "project": {
+      "android": {
+        "sourceDir": "./android",
+        "packageName": "com.notificationlogger"
+      }
+    }
   }
 }
