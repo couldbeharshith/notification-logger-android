@@ -32,6 +32,8 @@
     "@react-native/eslint-config": "0.84.0",
     "@react-native/metro-config": "0.84.0",
     "@react-native/typescript-config": "0.84.0",
+    "@react-native-community/cli": "^20.1.2",
+    "@react-native-community/cli-platform-android": "^20.1.0",
     "@types/react": "^19.0.6",
     "@types/react-test-renderer": "^19.0.0",
     "babel-jest": "^29.6.3",
