@@ -35,7 +35,7 @@ class BiometricAuthModule(reactContext: ReactApplicationContext) :
     @ReactMethod
     fun authenticateBiometric(options: ReadableMap, promise: Promise) {
         try {
-            val activity = currentActivity as? FragmentActivity
+            val activity = reactApplicationContext.currentActivity as? FragmentActivity
             if (activity == null) {
                 promise.reject("ERROR", "Activity is not available")
                 return
