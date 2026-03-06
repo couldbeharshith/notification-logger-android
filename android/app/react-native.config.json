@@ -1,0 +1,8 @@
+{
+  "project": {
+    "android": {
+      "sourceDir": ".",
+      "packageName": "com.notificationlogger"
+    }
+  }
+}
