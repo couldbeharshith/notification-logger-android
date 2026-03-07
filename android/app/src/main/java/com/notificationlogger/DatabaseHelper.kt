@@ -14,7 +14,8 @@ class DatabaseHelper private constructor(context: Context, password: ByteArray) 
     DATABASE_NAME,
     password,
     null,
-    DATABASE_VERSION
+    DATABASE_VERSION,
+    null
 ) {
     companion object {
         private const val DATABASE_NAME = "notifications.db"
