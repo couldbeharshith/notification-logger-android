@@ -9,9 +9,10 @@ import java.security.KeyStore
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 
-class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(
+class DatabaseHelper private constructor(context: Context, password: ByteArray) : SQLiteOpenHelper(
     context,
     DATABASE_NAME,
+    password,
     null,
     DATABASE_VERSION
 ) {
@@ -19,56 +20,49 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(
         private const val DATABASE_NAME = "notifications.db"
         private const val DATABASE_VERSION = 1
         private const val KEYSTORE_ALIAS = "NotificationLoggerKey"
-        
+
+        init {
+            System.loadLibrary("sqlcipher")
+        }
+
         @Volatile
         private var instance: DatabaseHelper? = null
         
         fun getInstance(context: Context): DatabaseHelper {
             return instance ?: synchronized(this) {
-                instance ?: DatabaseHelper(context.applicationContext).also { instance = it }
+                instance ?: run {
+                    val password = getOrCreateEncryptionKey()
+                    DatabaseHelper(context.applicationContext, password).also { instance = it }
+                }
             }
         }
-    }
-    
-    private val encryptionKey: ByteArray by lazy {
-        getOrCreateEncryptionKey()
-    }
-    
-    private fun getOrCreateEncryptionKey(): ByteArray {
-        val keyStore = KeyStore.getInstance("AndroidKeyStore")
-        keyStore.load(null)
-        
-        val secretKey = if (keyStore.containsAlias(KEYSTORE_ALIAS)) {
-            keyStore.getKey(KEYSTORE_ALIAS, null) as SecretKey
-        } else {
-            val keyGenerator = KeyGenerator.getInstance(
-                KeyProperties.KEY_ALGORITHM_AES,
-                "AndroidKeyStore"
-            )
-            keyGenerator.init(
-                KeyGenParameterSpec.Builder(
-                    KEYSTORE_ALIAS,
-                    KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
+
+        private fun getOrCreateEncryptionKey(): ByteArray {
+            val keyStore = KeyStore.getInstance("AndroidKeyStore")
+            keyStore.load(null)
+
+            val secretKey = if (keyStore.containsAlias(KEYSTORE_ALIAS)) {
+                keyStore.getKey(KEYSTORE_ALIAS, null) as SecretKey
+            } else {
+                val keyGenerator = KeyGenerator.getInstance(
+                    KeyProperties.KEY_ALGORITHM_AES,
+                    "AndroidKeyStore"
                 )
-                    .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
-                    .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
-                    .setKeySize(256)
-                    .build()
-            )
-            keyGenerator.generateKey()
+                keyGenerator.init(
+                    KeyGenParameterSpec.Builder(
+                        KEYSTORE_ALIAS,
+                        KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
+                    )
+                        .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
+                        .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
+                        .setKeySize(256)
+                        .build()
+                )
+                keyGenerator.generateKey()
+            }
+
+            return secretKey.encoded
         }
-        
-        return secretKey.encoded
-    }
-    
-    fun getWritableDatabase(): SQLiteDatabase {
-        SQLiteDatabase.loadLibs(context)
-        return super.getWritableDatabase(encryptionKey)
-    }
-    
-    fun getReadableDatabase(): SQLiteDatabase {
-        SQLiteDatabase.loadLibs(context)
-        return super.getReadableDatabase(encryptionKey)
     }
 
     override fun onCreate(db: SQLiteDatabase) {
