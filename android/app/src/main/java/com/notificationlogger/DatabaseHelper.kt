@@ -9,10 +9,10 @@ import java.security.KeyStore
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 
-class DatabaseHelper private constructor(context: Context, password: ByteArray) : SQLiteOpenHelper(
+class DatabaseHelper private constructor(context: Context, private val password: ByteArray) : SQLiteOpenHelper(
     context,
     DATABASE_NAME,
-    password,
+    null,
     DATABASE_VERSION
 ) {
     companion object {
